@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PresenceFaker — Make Discord think you're playing GTA VI</title>
+<meta name="description" content="A free desktop app that sets a fake Discord 'Playing Grand Theft Auto VI' status to prank your friends. One click. No account." />
+<link rel="icon" href="logo.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<!-- TODO (later): paste your Google AdSense <script> here once approved -->
+<style>
+  :root{
+    --bg:#0a0b0f; --bg2:#0e0f14; --surface:#16181d; --surface2:#1e1f24;
+    --line:#23252c; --text:#e8eaed; --muted:#9aa0a8;
+    --blurple:#5865f2; --blurple2:#4752c4; --pink:#eb459e; --green:#23a55a;
+    --radius:16px; --max:1120px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);
+    line-height:1.6;overflow-x:hidden;
+    background-image:
+      radial-gradient(60rem 60rem at 80% -10%, rgba(88,101,242,.18), transparent 60%),
+      radial-gradient(50rem 50rem at -10% 10%, rgba(235,69,158,.12), transparent 55%);
+    background-repeat:no-repeat;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',Inter,sans-serif;line-height:1.15;letter-spacing:-.02em}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+  .grad{background:linear-gradient(110deg,var(--blurple),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);
+    background:rgba(10,11,15,.72);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk';font-weight:700;font-size:18px}
+  .brand img{width:30px;height:30px;border-radius:8px;object-fit:cover}
+  .nav-links{display:flex;gap:28px;align-items:center}
+  .nav-links a{color:var(--muted);font-size:14px;font-weight:500;transition:color .2s}
+  .nav-links a:hover{color:var(--text)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;
+    font-family:Inter;font-weight:600;font-size:15px;padding:12px 22px;border-radius:12px;transition:.2s;white-space:nowrap}
+  .btn-primary{background:var(--blurple);color:#fff;box-shadow:0 8px 24px rgba(88,101,242,.35)}
+  .btn-primary:hover{background:var(--blurple2);transform:translateY(-1px)}
+  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:#3a3d46}
+  .nav-toggle{display:none;background:none;border:0;color:var(--text);font-size:24px;cursor:pointer}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;padding:80px 0 70px}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);
+    color:var(--muted);font-size:13px;font-weight:500;padding:7px 14px;border-radius:999px;margin-bottom:22px}
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+  .hero h1{font-size:clamp(34px,5vw,56px);font-weight:700}
+  .hero p.lead{color:var(--muted);font-size:18px;margin:20px 0 30px;max-width:34ch}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .cta-note{color:var(--muted);font-size:13px;margin-top:14px}
+
+  /* mockup card */
+  .mock{position:relative;justify-self:center;width:100%;max-width:420px}
+  .mock .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;
+    box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .mock .label{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;margin-bottom:14px}
+  .mock .row{display:flex;gap:16px}
+  .tile{width:96px;height:96px;border-radius:14px;flex:0 0 auto;object-fit:cover;
+    box-shadow:0 0 0 1px var(--line);animation:breathe 2.4s ease-in-out infinite}
+  .glow{position:absolute;inset:auto;width:96px;height:96px;border-radius:14px;filter:blur(28px);opacity:.7;
+    background:linear-gradient(135deg,var(--blurple),var(--pink));animation:glow 3s ease-in-out infinite;z-index:-1}
+  .mock .title{font-family:'Space Grotesk';font-weight:700;font-size:18px}
+  .mock .d{color:#dbdee1;font-size:14px;margin-top:4px}
+  .mock .s{color:var(--muted);font-size:14px}
+  .mock .e{color:var(--muted);font-size:12px;margin-top:4px}
+  .mock .gbtn{margin-top:16px;background:#4e5058;color:#fff;text-align:center;font-weight:600;font-size:13px;
+    padding:10px;border-radius:6px}
+  @keyframes breathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.04) translateY(-3px)}}
+  @keyframes glow{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:.85;transform:scale(1.1)}}
+
+  /* sections */
+  section{padding:64px 0}
+  .eyebrow{color:var(--blurple);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+  .h2{font-size:clamp(26px,4vw,38px);font-weight:700;margin:10px 0 8px}
+  .sub{color:var(--muted);max-width:52ch}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
+  .feat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px;transition:.2s}
+  .feat:hover{transform:translateY(-4px);border-color:#33363f}
+  .feat .ico{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:22px;
+    background:linear-gradient(135deg,rgba(88,101,242,.25),rgba(235,69,158,.2));margin-bottom:16px}
+  .feat h3{font-size:18px;margin-bottom:8px}
+  .feat p{color:var(--muted);font-size:14px}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;counter-reset:s}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px;position:relative}
+  .step::before{counter-increment:s;content:counter(s);font-family:'Space Grotesk';font-weight:700;
+    font-size:14px;width:30px;height:30px;border-radius:50%;background:var(--blurple);color:#fff;
+    display:grid;place-items:center;margin-bottom:14px}
+  .step h3{font-size:16px;margin-bottom:6px}
+  .step p{color:var(--muted);font-size:14px}
+
+  /* pricing */
+  .prices{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:40px;max-width:760px}
+  .price{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:30px}
+  .price.pro{border-color:var(--blurple);box-shadow:0 0 0 1px var(--blurple),0 20px 50px rgba(88,101,242,.2);position:relative}
+  .tag{position:absolute;top:-12px;right:24px;background:var(--blurple);color:#fff;font-size:12px;font-weight:600;
+    padding:4px 12px;border-radius:999px}
+  .price h3{font-size:16px;color:var(--muted);font-weight:600}
+  .price .amt{font-family:'Space Grotesk';font-size:40px;font-weight:700;margin:6px 0 4px}
+  .price .amt span{font-size:15px;color:var(--muted);font-weight:500}
+  .price ul{list-style:none;margin:18px 0 24px;display:grid;gap:10px}
+  .price li{color:#cfd3d9;font-size:14px;display:flex;gap:10px}
+  .price li::before{content:"✓";color:var(--green);font-weight:700}
+  .price .btn{width:100%;justify-content:center}
+
+  /* gear / affiliate */
+  .gear{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:36px}
+  .prod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:flex;
+    flex-direction:column;gap:10px}
+  .prod .pico{font-size:30px}
+  .prod h4{font-size:15px}
+  .prod p{color:var(--muted);font-size:13px;flex:1}
+  .prod a{color:var(--blurple);font-weight:600;font-size:14px}
+  .disc{color:var(--muted);font-size:12px;margin-top:18px;font-style:italic}
+
+  /* ad slot */
+  .adslot{margin-top:8px;border:1px dashed var(--line);border-radius:var(--radius);min-height:110px;
+    display:grid;place-items:center;color:#5a5f68;font-size:13px;background:var(--bg2)}
+
+  /* faq */
+  .faq{margin-top:36px;display:grid;gap:12px;max-width:780px}
+  details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 20px}
+  summary{cursor:pointer;padding:18px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--muted);font-size:20px}
+  details[open] summary::after{content:"–"}
+  details p{color:var(--muted);font-size:14px;padding:0 0 18px}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:40px 0;margin-top:40px;color:var(--muted);font-size:13px}
+  .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .foot a{color:var(--muted)}.foot a:hover{color:var(--text)}
+  .legal{max-width:620px;margin-top:18px;line-height:1.7}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  @media(max-width:900px){
+    .hero{grid-template-columns:1fr;text-align:center;padding:52px 0}
+    .hero p.lead{margin-inline:auto}.cta-row{justify-content:center}
+    .mock{order:-1}
+    .grid3,.steps,.gear{grid-template-columns:1fr}
+    .prices{grid-template-columns:1fr}
+    .nav-links{display:none}.nav-toggle{display:block}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav">
+    <a class="brand" href="#"><img src="logo.jpg" alt="PresenceFaker" /> PresenceFaker</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <!-- TODO: replace # with your download link -->
+      <a class="btn btn-primary" href="https://github.com/Bettal-Hamza/presencefaker/releases/download/v1.0.0/PresenceFaker.exe">Download</a>
+    </div>
+    <button class="nav-toggle" aria-label="menu">☰</button>
+  </div>
+</nav>
+
+<header class="wrap hero">
+  <div>
+    <span class="pill"><span class="dot"></span> Works with the Discord desktop app</span>
+    <h1>Make Discord think you're playing <span class="grad">GTA VI</span>.</h1>
+    <p class="lead">A tiny free app that flips your Discord status to “Playing Grand Theft Auto VI” — timer, art and all. Prank your friends in one click.</p>
+    <div class="cta-row">
+      <!-- TODO: replace # with your hosted .zip / .exe download link -->
+      <a class="btn btn-primary" href="https://github.com/Bettal-Hamza/presencefaker/releases/download/v1.0.0/PresenceFaker.exe">⬇ Download free</a>
+      <a class="btn btn-ghost" href="#how">See how it works</a>
+    </div>
+    <p class="cta-note">No account. No data collected. Windows 10/11.</p>
+    <p class="cta-note" style="margin-top:6px">⚠️ Windows may say “unknown publisher” — that's normal for new indie apps. Click <strong>More info → Run anyway</strong>.</p>
+  </div>
+
+  <div class="mock">
+    <div class="card">
+      <div class="label">PLAYING A GAME</div>
+      <div class="row">
+        <div style="position:relative">
+          <div class="glow"></div>
+          <img class="tile" src="logo.jpg" alt="GTA VI" />
+        </div>
+        <div>
+          <div class="title">Grand Theft Auto VI</div>
+          <div class="d">Story Mode</div>
+          <div class="s">Causing chaos in Vice City</div>
+          <div class="e">02:14 elapsed</div>
+        </div>
+      </div>
+      <div class="gbtn">Get GTA VI</div>
+    </div>
+  </div>
+</header>
+
+<section id="features" class="wrap reveal">
+  <span class="eyebrow">Why it's good</span>
+  <h2 class="h2">Looks 100% real to your friends</h2>
+  <p class="sub">It uses Discord's actual Rich Presence — the same system real games use. Nothing faked, nothing sketchy.</p>
+  <div class="grid3">
+    <div class="feat"><div class="ico">🎮</div><h3>Real “Playing” status</h3><p>Green “Playing Grand Theft Auto VI” with cover art, a live timer and a clickable button.</p></div>
+    <div class="feat"><div class="ico">⚡</div><h3>One click</h3><p>Open the app, hit Start. No setup, no login, no Discord token nonsense.</p></div>
+    <div class="feat"><div class="ico">🎨</div><h3>Custom troll text</h3><p>Edit the two status lines to say whatever you want under the game.</p></div>
+  </div>
+</section>
+
+<section id="how" class="wrap reveal">
+  <span class="eyebrow">Dead simple</span>
+  <h2 class="h2">Up and running in under a minute</h2>
+  <div class="steps">
+    <div class="step"><h3>Download &amp; open</h3><p>Grab the app and launch it — the Discord desktop app just needs to be open.</p></div>
+    <div class="step"><h3>Hit Start</h3><p>Your profile instantly shows “Playing Grand Theft Auto VI”.</p></div>
+    <div class="step"><h3>Watch the chaos</h3><p>Friends start asking how you got the game. Hit Stop whenever you're done.</p></div>
+  </div>
+</section>
+
+<section id="pricing" class="wrap reveal">
+  <span class="eyebrow">Pricing</span>
+  <h2 class="h2">Free forever. Premium kills the ads.</h2>
+  <div class="prices">
+    <div class="price">
+      <h3>Free</h3>
+      <div class="amt">$0</div>
+      <ul><li>Full fake “Playing GTA VI” status</li><li>Custom status text</li><li>Live timer &amp; button</li><li>Supported by a small banner ad</li></ul>
+      <!-- TODO: replace # with your download link -->
+      <a class="btn btn-ghost" href="https://github.com/Bettal-Hamza/presencefaker/releases/download/v1.0.0/PresenceFaker.exe">Download free</a>
+    </div>
+    <div class="price pro">
+      <span class="tag">Best value</span>
+      <h3>Premium</h3>
+      <div class="amt">$3 <span>/ month</span></div>
+      <ul><li>Everything in Free</li><li><strong>No ads</strong></li><li>Priority new features</li><li>Support development ❤️</li></ul>
+      <!-- TODO: replace # with your Gumroad / Ko-fi premium checkout link -->
+      <a class="btn btn-primary" href="#">Remove ads — go Premium</a>
+    </div>
+  </div>
+</section>
+
+<section id="gear" class="wrap reveal">
+  <span class="eyebrow">Recommended</span>
+  <h2 class="h2">Gear we love for gaming</h2>
+  <p class="sub">Hand-picked gaming gear. Buying through these links supports PresenceFaker at no extra cost to you.</p>
+  <div class="gear">
+    <!-- TODO: replace href="#" with your Amazon Associates affiliate links -->
+    <div class="prod"><div class="pico">🎧</div><h4>Gaming headset</h4><p>Crisp comms so your fake GTA squad can hear you.</p><a href="#" rel="sponsored nofollow">View on Amazon →</a></div>
+    <div class="prod"><div class="pico">🖱️</div><h4>Gaming mouse</h4><p>Lightweight, fast — for when you play a real game too.</p><a href="#" rel="sponsored nofollow">View on Amazon →</a></div>
+    <div class="prod"><div class="pico">⌨️</div><h4>Mechanical keyboard</h4><p>Clicky keys that make even idling feel pro.</p><a href="#" rel="sponsored nofollow">View on Amazon →</a></div>
+  </div>
+  <p class="disc">As an Amazon Associate I earn from qualifying purchases.</p>
+
+  <!-- Display-ad slot: paste your AdSense unit here once approved -->
+  <div class="adslot" style="margin-top:36px">Ad space</div>
+</section>
+
+<section id="faq" class="wrap reveal">
+  <span class="eyebrow">FAQ</span>
+  <h2 class="h2">Questions</h2>
+  <div class="faq">
+    <details open><summary>Is this safe / against Discord's rules?</summary><p>It uses Discord's official Rich Presence API — the same one real games use. It's a harmless display trick, not a hack, and doesn't touch your account credentials.</p></details>
+    <details><summary>Do I need the real GTA VI?</summary><p>No. That's the whole joke — it shows the status without the game.</p></details>
+    <details><summary>Will my friends know it's fake?</summary><p>Not from your profile. It looks identical to actually playing.</p></details>
+    <details><summary>Does it work on mobile / browser?</summary><p>No — it needs the Discord desktop app open on Windows.</p></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <a class="brand" href="#"><img src="logo.jpg" alt="" style="width:24px;height:24px;border-radius:6px" /> PresenceFaker</a>
+      <div style="display:flex;gap:22px;flex-wrap:wrap">
+        <a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+        <!-- TODO: your contact email -->
+        <a href="mailto:you@example.com">Contact</a>
+      </div>
+    </div>
+    <p class="legal">
+      PresenceFaker is a novelty tool and is <strong>not affiliated with, endorsed by, or sponsored by Rockstar Games or Take-Two Interactive</strong>. “Grand Theft Auto” is a trademark of its respective owner, referenced here for identification only.
+      This site contains affiliate links; we may earn a commission from purchases made through them at no extra cost to you. As an Amazon Associate we earn from qualifying purchases.
+    </p>
+    <p style="margin-top:14px">© <span id="yr"></span> PresenceFaker</p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  // mobile nav: jump to download
+  document.querySelector('.nav-toggle').addEventListener('click',()=>location.href='#pricing');
+  // scroll reveal
+  const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
